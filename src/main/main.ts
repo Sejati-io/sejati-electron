@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'node:path';
 import os from 'node:os';
 import log from 'electron-log';
+import { createAppMenu } from './menu';
 
 // Strict security defaults
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
@@ -10,10 +11,10 @@ let mainWindow: BrowserWindow | null = null;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
-    title: 'Welcome',
+    title: 'Sejati',
     show: false,
+    frame: false,
+    kiosk: true,
     backgroundColor: '#1e1e1e',
     webPreferences: {
       preload: path.join(__dirname, '../preload/preload.js'),
@@ -30,6 +31,13 @@ function createWindow() {
 
   const indexPath = path.join(__dirname, '../renderer/index.html');
   mainWindow.loadFile(indexPath).catch((err) => log.error('loadFile error:', err));
+
+  createAppMenu(mainWindow);
+
+  // Prevent closing via Alt+F4 or other shortcuts
+  mainWindow.on('close', (event) => {
+    event.preventDefault();
+  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
